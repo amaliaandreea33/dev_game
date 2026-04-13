@@ -72,6 +72,7 @@ __lua__
 x = 56
 y = 100
 bullets = {}
+flies = {}
 
 function _update()
 	-- movement
@@ -95,6 +96,32 @@ function _update()
 		end
 	end
 
+	-- spawn and update flies
+	if rnd(100) < 3 then
+		local start_x = 130
+		local speed = -0.6
+		if rnd(2) < 1 then
+			start_x = -8
+			speed = 0.6
+		end
+		add(flies, {fx = start_x, fy = rnd(80), dead = false, timer = 0, speed = speed})
+	end
+
+	for f in all(flies) do
+		if not f.dead then
+			f.fx += f.speed
+			f.fy += cos(t()) * 0.5
+			f.timer += 1
+			for b in all(bullets) do
+				if abs(f.fx - b.bx) < 6 and abs(f.fy - b.by) < 6 then
+					f.dead = true
+					del(bullets, b)
+				end
+			end
+			if f.fx < -16 or f.fx > 140 then del(flies, f) end
+		end
+	end
+
 	-- clamp to screen (spider is 2x2 tiles, so 16px wide)
 	-- screen is 128x128. 128 - 16 = 112
 	if x < 0 then x = 0 end
@@ -107,6 +134,18 @@ function _draw()
 	-- draw bullets
 	for b in all(bullets) do
 		spr(4, b.bx, b.by)
+	end
+
+	-- draw flies
+	for f in all(flies) do
+		local fly_sp = 2
+		if not f.dead then
+			fly_sp = 2 + flr((f.timer % 20) / 10)
+		end
+		spr(fly_sp, f.fx, f.fy)
+		if f.dead then
+			spr(5, f.fx, f.fy)
+		end
 	end
 
 	-- spr(sprite_id, x, y, width_in_tiles, height_in_tiles)
