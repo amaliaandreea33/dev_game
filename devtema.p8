@@ -65,3 +65,51 @@ __gfx__
 00777000077777777770000007777777777777700000077777777770000777000000000000000000000000000000000000000000000000000000000000000000
 07770000077777777777777777777777777777777777777777777770000077700000000000000000000000000000000000000000000000000000000000000000
 07770000777700000077777777777777777777777777770000007777000077700000000000000000000000000000000000000000000000000000000000000000
+
+__lua__
+
+-- player spider setup
+x = 56
+y = 100
+bullets = {}
+
+function _update()
+	-- movement
+	if btn(0) then -- left arrow
+		x -= 2
+	end
+	if btn(1) then -- right arrow
+		x += 2
+	end
+
+	-- shooting (Z or X)
+	if btnp(4) or btnp(5) then 
+		add(bullets, {bx = x + 4, by = y - 4})
+	end
+
+	-- update bullets
+	for b in all(bullets) do
+		b.by -= 3
+		if b.by < -8 then
+			del(bullets, b)
+		end
+	end
+
+	-- clamp to screen (spider is 2x2 tiles, so 16px wide)
+	-- screen is 128x128. 128 - 16 = 112
+	if x < 0 then x = 0 end
+	if x > 100 then x = 100 end
+end
+
+function _draw()
+	cls(0)
+
+	-- draw bullets
+	for b in all(bullets) do
+		spr(4, b.bx, b.by)
+	end
+
+	-- spr(sprite_id, x, y, width_in_tiles, height_in_tiles)
+	-- we start drawing at tile 0 (top-left of the spider)
+	spr(0, x, y, 2, 2)
+end
